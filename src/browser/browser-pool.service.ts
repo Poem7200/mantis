@@ -1,4 +1,10 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  Optional,
+  Inject,
+} from '@nestjs/common';
 import { Browser, BrowserContext, Page } from 'playwright';
 import { BrowserService } from './browser.service';
 import {
@@ -15,11 +21,11 @@ export class BrowserPoolService implements OnModuleDestroy {
 
   constructor(
     private readonly browserService: BrowserService,
-    maxPoolSize: number = 5,
-    idleTimeout: number = 10 * 60 * 1000, // 默认 10 分钟
+    @Optional() @Inject('BROWSER_POOL_MAX_SIZE') maxPoolSize?: number,
+    @Optional() @Inject('BROWSER_POOL_IDLE_TIMEOUT') idleTimeout?: number,
   ) {
-    this.maxPoolSize = maxPoolSize;
-    this.idleTimeout = idleTimeout;
+    this.maxPoolSize = maxPoolSize ?? 5;
+    this.idleTimeout = idleTimeout ?? 10 * 60 * 1000; // 默认 10 分钟
     this.startIdleCleanup();
   }
 
