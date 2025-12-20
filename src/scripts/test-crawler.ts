@@ -67,4 +67,4 @@ async function testCrawler() {
 }
 
 // 运行测试
-testCrawler();
+void testCrawler();
