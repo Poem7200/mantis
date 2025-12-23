@@ -11,17 +11,82 @@ export class JobsService {
     private jobRepository: Repository<Job>,
   ) {}
 
+  /**
+   * 解析相对时间字符串（如 "1d", "1mo"）为 Date 对象
+   * @param relativeTime 相对时间字符串，如 "1d", "2d", "1mo", "1w", "1h" 等
+   * @returns Date 对象，如果无法解析则返回 undefined
+   */
+  private parseRelativeTime(
+    relativeTime: string | undefined,
+  ): Date | undefined {
+    if (!relativeTime || !relativeTime.trim()) {
+      return undefined;
+    }
+
+    const trimmed = relativeTime.trim().toLowerCase();
+
+    // 处理刚刚发布的情况
+    if (trimmed === 'just now' || trimmed === 'now') {
+      return new Date();
+    }
+
+    // 匹配数字和单位（如 "1d", "2d", "1mo", "1w"）
+    const match = trimmed.match(/^(\d+)([a-z]+)$/);
+    if (!match) {
+      return undefined;
+    }
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2];
+
+    const now = new Date();
+    let result: Date;
+
+    switch (unit) {
+      case 'h': // 小时
+        result = new Date(now.getTime() - value * 60 * 60 * 1000);
+        break;
+      case 'd': // 天
+        result = new Date(now.getTime() - value * 24 * 60 * 60 * 1000);
+        break;
+      case 'w': // 周
+        result = new Date(now.getTime() - value * 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'mo': // 月（按30天计算）
+        result = new Date(now.getTime() - value * 30 * 24 * 60 * 60 * 1000);
+        break;
+      case 'y': // 年（按365天计算）
+        result = new Date(now.getTime() - value * 365 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        return undefined;
+    }
+
+    return result;
+  }
+
   async create(jobData: IJob): Promise<Job> {
+    const {
+      title,
+      company,
+      url,
+      description,
+      location,
+      salary,
+      tags,
+      source,
+      postedAt,
+    } = jobData;
     const job = this.jobRepository.create({
-      title: jobData.title,
-      company: jobData.company,
-      url: jobData.url,
-      description: jobData.description,
-      location: jobData.location,
-      salary: jobData.salary,
-      tags: jobData.tags,
-      source: jobData.source,
-      postedAt: jobData.postedAt ? new Date(jobData.postedAt) : undefined,
+      title,
+      company,
+      url,
+      description,
+      location,
+      salary,
+      tags,
+      source,
+      postedAt: this.parseRelativeTime(postedAt),
     });
     return this.jobRepository.save(job);
   }
@@ -37,7 +102,7 @@ export class JobsService {
         salary: jobData.salary,
         tags: jobData.tags,
         source: jobData.source,
-        postedAt: jobData.postedAt ? new Date(jobData.postedAt) : undefined,
+        postedAt: this.parseRelativeTime(jobData.postedAt),
       }),
     );
     return this.jobRepository.save(jobs);
