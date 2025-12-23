@@ -26,7 +26,8 @@ export class JobsService {
     const trimmed = relativeTime.trim().toLowerCase();
 
     // 处理刚刚发布的情况
-    if (trimmed === 'just now' || trimmed === 'now') {
+    const justNow = ['just now', 'now'];
+    if (justNow.includes(trimmed)) {
       return new Date();
     }
 
@@ -36,33 +37,20 @@ export class JobsService {
       return undefined;
     }
 
-    const value = parseInt(match[1], 10);
-    const unit = match[2];
+    const [, value, unit] = match;
+    const valueNum = parseInt(value, 10);
 
     const now = new Date();
-    let result: Date;
 
-    switch (unit) {
-      case 'h': // 小时
-        result = new Date(now.getTime() - value * 60 * 60 * 1000);
-        break;
-      case 'd': // 天
-        result = new Date(now.getTime() - value * 24 * 60 * 60 * 1000);
-        break;
-      case 'w': // 周
-        result = new Date(now.getTime() - value * 7 * 24 * 60 * 60 * 1000);
-        break;
-      case 'mo': // 月（按30天计算）
-        result = new Date(now.getTime() - value * 30 * 24 * 60 * 60 * 1000);
-        break;
-      case 'y': // 年（按365天计算）
-        result = new Date(now.getTime() - value * 365 * 24 * 60 * 60 * 1000);
-        break;
-      default:
-        return undefined;
-    }
-
-    return result;
+    // 用object的key-value，不用switch
+    const units = {
+      h: new Date(now.getTime() - valueNum * 60 * 60 * 1000),
+      d: new Date(now.getTime() - valueNum * 24 * 60 * 60 * 1000),
+      w: new Date(now.getTime() - valueNum * 7 * 24 * 60 * 60 * 1000),
+      mo: new Date(now.getTime() - valueNum * 30 * 24 * 60 * 60 * 1000),
+      y: new Date(now.getTime() - valueNum * 365 * 24 * 60 * 60 * 1000),
+    };
+    return units[unit as keyof typeof units] || undefined;
   }
 
   async create(jobData: IJob): Promise<Job> {
