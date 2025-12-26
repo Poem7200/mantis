@@ -20,22 +20,26 @@
 
 # 核心模块&抽象
 
-browser # Playwright的浏览器操作方法封装
-├─ browser-pool.service # 浏览器池
-├─ browser.service # 浏览器操作封装（打开页面/点击/获取元素……）
-config
-├─ constants # 项目使用的所有常量
-├─ database.config # 数据库连接的配置项（目前只有PostgreSQL）
-crawler # 爬虫模块
-├─ strategies # 爬虫策略（一个网站一个策略）
-├─ crawler.controller # 爬虫任务触发接口
-├─ crawler.service # 爬虫策略的注册/读取，使用单个/多个策略进行爬虫并存储数据库
-├─ crawler-scheduler.service # 爬虫定时触发
-jobs # 岗位信息的CURD
-scripts # 本地测试的爬虫脚本
+- browser # Playwright的浏览器操作方法封装
+  - browser-pool.service # 浏览器池
+  - browser.service # 浏览器操作封装（打开页面/点击/获取元素……）
+- config
+  - constants # 项目使用的所有常量
+  - database.config # 数据库连接的配置项（目前只有PostgreSQL）
+- crawler # 爬虫模块
+  - strategies # 爬虫策略（一个网站一个策略）
+  - crawler.controller # 爬虫任务触发接口
+  - crawler.service # 爬虫策略的注册/读取，使用单个/多个策略进行爬虫并存储数据库
+  - crawler-scheduler.service # 爬虫定时触发
+- jobs # 岗位的实体类&增删改查方法
+- scripts # 本地测试的爬虫脚本
 
 # 执行流程
 
+（待完善）
+
 # 技术选型
+
+（待完善）
 
 # 可扩展点&限制
