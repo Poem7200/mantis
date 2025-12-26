@@ -62,7 +62,9 @@ export class CrawlerService {
     this.logger.log(`使用策略 "${strategyName}" 开始爬取`);
 
     // 从选项中提取 headless 设置，默认为 false（非 headless 模式，可以看到浏览器）
-    const { headless = false, ...crawlOptions } = options;
+    const headless = (options.headless as boolean | undefined) ?? false;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { headless: _headless, ...crawlOptions } = options;
 
     // 确保浏览器已启动
     const browser = this.browserService.getBrowser();

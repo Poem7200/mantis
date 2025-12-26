@@ -48,7 +48,7 @@ export class BrowserService implements OnModuleDestroy {
         ...launchOptions,
       });
 
-      // 创建浏览器上下文
+      // 创建浏览器上下文，该上下文有独立的缓存
       this.context = await this.browser.newContext({
         viewport: viewport || { width: 1920, height: 1080 },
         userAgent:
@@ -60,7 +60,7 @@ export class BrowserService implements OnModuleDestroy {
       this.logger.log('浏览器启动成功');
       return this.browser;
     } catch (error) {
-      this.logger.error(`浏览器启动失败: ${error.message}`, error.stack);
+      this.logger.error(`浏览器启动失败: ${error?.message}`, error?.stack);
       throw error;
     }
   }
@@ -79,7 +79,7 @@ export class BrowserService implements OnModuleDestroy {
   }
 
   /**
-   * 导航到指定 URL
+   * 导航到指定 URL（包含指定等待标准和超时时间）
    */
   async goto(
     page: Page,
@@ -96,7 +96,7 @@ export class BrowserService implements OnModuleDestroy {
       });
       this.logger.debug(`页面加载完成: ${url}`);
     } catch (error) {
-      this.logger.error(`页面导航失败: ${url}`, error.stack);
+      this.logger.error(`页面导航失败: ${url}`, error?.stack);
       throw error;
     }
   }
@@ -112,8 +112,10 @@ export class BrowserService implements OnModuleDestroy {
     const { timeout = 30000, visible, hidden } = options;
 
     try {
+      // waitForSelector 方法会等待选择器出现在页面上，如果选择器不存在，则会等待 timeout 时间后抛出错误
       await page.waitForSelector(selector, {
         timeout,
+        // TODO: state需要优化，建议使用策略模式
         state: visible ? 'visible' : hidden ? 'hidden' : undefined,
       });
     } catch (error) {
