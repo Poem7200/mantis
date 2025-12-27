@@ -35,11 +35,27 @@ export interface ICrawlerStrategy {
   readonly baseUrl: string;
 
   /**
+   * 生成搜索 URL
+   * @param keyword 关键词
+   * @returns {string} 搜索 URL
+   */
+  // 这是可选的属性，并非必须生成搜索 URL
+  generateUrl?: (keyword?: string) => string;
+
+  /**
    * 爬取职位列表
    * @param page 浏览器页面实例
    * @param options 爬取选项
    */
   crawl(page: Page, options?: ICrawlOptions): Promise<IJob[]>;
+
+  /**
+   * 提取职位信息
+   * @param page 浏览器页面实例
+   * @param maxResults 最大爬取数量
+   * @returns {Promise<IJob[]>} 职位信息列表
+   */
+  extractJobs(page: Page, maxResults: number): Promise<IJob[]>;
 }
 
 /**

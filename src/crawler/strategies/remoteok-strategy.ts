@@ -14,6 +14,18 @@ export class RemoteOkStrategy implements ICrawlerStrategy {
   private readonly logger = new Logger(RemoteOkStrategy.name);
 
   /**
+   * 生成 RemoteOK 的搜索 URL
+   */
+  generateUrl(keyword?: string): string {
+    let url = `${this.baseUrl}/remote-dev-jobs`;
+    if (keyword) {
+      // TODO: keyword可能有多个，需要尝试并了解一下remoteok处理多个keyword是怎么操作的
+      url = `${this.baseUrl}/remote-${keyword.toLowerCase()}-jobs`;
+    }
+    return url;
+  }
+
+  /**
    * 爬取 RemoteOK 网站的职位信息
    */
   async crawl(page: Page, options: ICrawlOptions = {}): Promise<IJob[]> {
@@ -23,12 +35,7 @@ export class RemoteOkStrategy implements ICrawlerStrategy {
       this.logger.log(`开始爬取 RemoteOK，关键词: ${keyword || '全部'}`);
 
       // 构建 URL
-      let url = `${this.baseUrl}/remote-dev-jobs`;
-      // TODO: keyword可能有多个，需要尝试并了解一下remoteok处理多个keyword是怎么操作的
-      if (keyword) {
-        url = `${this.baseUrl}/remote-${keyword.toLowerCase()}-jobs`;
-      }
-
+      const url = this.generateUrl(keyword);
       // 导航到页面
       await page.goto(url, {
         waitUntil: 'networkidle',
@@ -90,7 +97,7 @@ export class RemoteOkStrategy implements ICrawlerStrategy {
   /**
    * 提取职位信息
    */
-  private async extractJobs(page: Page, maxResults: number): Promise<IJob[]> {
+  async extractJobs(page: Page, maxResults: number): Promise<IJob[]> {
     try {
       // RemoteOK 的职位数据在 table#jobsboard 中
       // 注意：必须通过参数传递 baseUrl，因为 page.evaluate() 无法访问闭包变量

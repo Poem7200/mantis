@@ -12,7 +12,18 @@ export class HimalayasStrategy implements ICrawlerStrategy {
   readonly baseUrl = 'https://himalayas.app';
 
   private readonly logger = new Logger(HimalayasStrategy.name);
-  private readonly maxScrollAttempts = 10; // 最大滚动次数，避免无限滚动
+
+  /**
+   * 生成 Himalayas 的搜索 URL
+   */
+  generateUrl(keyword?: string): string {
+    let url = `${this.baseUrl}/jobs`;
+    // TODO: 当前keyword只是指的岗位关键词，但其实有可能包含了地区等各种信息，需要扩展完善
+    if (keyword) {
+      url = `${this.baseUrl}/jobs/${keyword}`;
+    }
+    return url;
+  }
 
   /**
    * 爬取 Himalayas 网站的职位信息
@@ -24,11 +35,7 @@ export class HimalayasStrategy implements ICrawlerStrategy {
       this.logger.log(`开始爬取 Himalayas，关键词: ${keyword || '全部'}`);
 
       // 构建 URL
-      // TODO: 当前keyword只是指的岗位关键词，但其实有可能包含了地区等各种信息，需要扩展完善
-      let url = `${this.baseUrl}/jobs`;
-      if (keyword) {
-        url = `${this.baseUrl}/jobs/${keyword}`;
-      }
+      const url = this.generateUrl(keyword);
 
       // 导航到页面
       await page.goto(url, {
@@ -65,7 +72,7 @@ export class HimalayasStrategy implements ICrawlerStrategy {
   /**
    * 提取职位信息
    */
-  private async extractJobs(page: Page, maxResults: number): Promise<IJob[]> {
+  async extractJobs(page: Page, maxResults: number): Promise<IJob[]> {
     try {
       // Himalayas 的职位数据提取
       // 注意：必须通过参数传递 baseUrl，因为 page.evaluate() 无法访问闭包变量
