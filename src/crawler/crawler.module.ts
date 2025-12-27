@@ -4,6 +4,7 @@ import { CrawlerService } from './crawler.service';
 import { CrawlerController } from './crawler.controller';
 import { CrawlerSchedulerService } from './crawler-scheduler.service';
 import { RemoteOkStrategy } from './strategies/remoteok-strategy';
+import { HimalayasStrategy } from './strategies/himalayas-strategy';
 import { BrowserModule } from '../browser/browser.module';
 import { JobsModule } from '../jobs/jobs.module';
 
@@ -14,7 +15,12 @@ import { JobsModule } from '../jobs/jobs.module';
     JobsModule, // 需要 JobsService
   ],
   controllers: [CrawlerController],
-  providers: [CrawlerService, CrawlerSchedulerService, RemoteOkStrategy],
+  providers: [
+    CrawlerService,
+    CrawlerSchedulerService,
+    RemoteOkStrategy,
+    HimalayasStrategy,
+  ],
   exports: [CrawlerService],
 })
 export class CrawlerModule {}

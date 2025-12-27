@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { CrawlerService } from '../crawler/crawler.service';
-import { JobsService } from '../jobs/jobs.service';
+// import { JobsService } from '../jobs/jobs.service';
 
 async function testCrawler() {
   // 创建 NestJS 应用上下文（不需要 HTTP 服务器）
@@ -9,17 +9,17 @@ async function testCrawler() {
 
   // 获取服务
   const crawlerService = app.get(CrawlerService);
-  const jobsService = app.get(JobsService);
+  // const jobsService = app.get(JobsService);
 
   try {
     console.log('='.repeat(60));
-    console.log('🚀 开始爬取 RemoteOK...');
+    console.log('🚀 开始爬取 Himalayas...');
     console.log('💡 浏览器将以非 headless 模式运行（你可以看到浏览器窗口）');
     console.log('='.repeat(60));
     console.log('');
 
     // 调用爬虫，设置 headless: false
-    const jobs = await crawlerService.crawl('remoteok', {
+    const jobs = await crawlerService.crawl('himalayas', {
       headless: false, // 非 headless 模式，可以看到浏览器窗口
       keyword: 'react', // 可选：搜索关键词，不设置则爬取全部
       maxResults: 10, // 可选：最多爬取 10 个职位
@@ -45,35 +45,35 @@ async function testCrawler() {
         console.log('');
       });
 
-      // 保存到数据库
-      console.log('='.repeat(60));
-      console.log('💾 开始保存到数据库...');
-      console.log('='.repeat(60));
-      console.log('');
+      // // 保存到数据库
+      // console.log('='.repeat(60));
+      // console.log('💾 开始保存到数据库...');
+      // console.log('='.repeat(60));
+      // console.log('');
 
-      try {
-        const { saved, skipped } =
-          await jobsService.createManyWithDuplicateHandling(jobs);
-        console.log(`✅ 成功保存 ${saved.length} 个职位到数据库`);
-        if (skipped > 0) {
-          console.log(`⏭️  跳过 ${skipped} 个重复职位`);
-        }
+      // try {
+      //   const { saved, skipped } =
+      //     await jobsService.createManyWithDuplicateHandling(jobs);
+      //   console.log(`✅ 成功保存 ${saved.length} 个职位到数据库`);
+      //   if (skipped > 0) {
+      //     console.log(`⏭️  跳过 ${skipped} 个重复职位`);
+      //   }
 
-        // 验证保存的数据
-        const totalJobs = await jobsService.findAll();
-        console.log(`📊 数据库中现有职位总数: ${totalJobs.length}`);
-      } catch (error) {
-        console.error('❌ 保存到数据库失败:');
-        if (error instanceof Error) {
-          console.error(`   错误信息: ${error.message}`);
-          if (error.stack) {
-            console.error(`   堆栈信息: ${error.stack}`);
-          }
-        } else {
-          console.error(error);
-        }
-        throw error;
-      }
+      //   // 验证保存的数据
+      //   const totalJobs = await jobsService.findAll();
+      //   console.log(`📊 数据库中现有职位总数: ${totalJobs.length}`);
+      // } catch (error) {
+      //   console.error('❌ 保存到数据库失败:');
+      //   if (error instanceof Error) {
+      //     console.error(`   错误信息: ${error.message}`);
+      //     if (error.stack) {
+      //       console.error(`   堆栈信息: ${error.stack}`);
+      //     }
+      //   } else {
+      //     console.error(error);
+      //   }
+      //   throw error;
+      // }
     }
 
     console.log('');

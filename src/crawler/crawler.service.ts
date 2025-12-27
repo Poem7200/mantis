@@ -6,6 +6,7 @@ import {
   IJob,
 } from './interfaces/base-strategy.interface';
 import { RemoteOkStrategy } from './strategies/remoteok-strategy';
+import { HimalayasStrategy } from './strategies/himalayas-strategy';
 
 @Injectable()
 export class CrawlerService {
@@ -15,9 +16,11 @@ export class CrawlerService {
   constructor(
     private readonly browserService: BrowserService,
     private readonly remoteOkStrategy: RemoteOkStrategy,
+    private readonly himalayasStrategy: HimalayasStrategy,
   ) {
     // 注册所有策略
     this.registerStrategy(remoteOkStrategy);
+    this.registerStrategy(himalayasStrategy);
   }
 
   /**
