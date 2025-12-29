@@ -5,6 +5,7 @@ import { CrawlerController } from './crawler.controller';
 import { CrawlerSchedulerService } from './crawler-scheduler.service';
 import { RemoteOkStrategy } from './strategies/remoteok-strategy';
 import { HimalayasStrategy } from './strategies/himalayas-strategy';
+import { WeWorkRemotelyStrategy } from './strategies/weworkremotely-strategy';
 import { BrowserModule } from '../browser/browser.module';
 import { JobsModule } from '../jobs/jobs.module';
 
@@ -20,6 +21,7 @@ import { JobsModule } from '../jobs/jobs.module';
     CrawlerSchedulerService,
     RemoteOkStrategy,
     HimalayasStrategy,
+    WeWorkRemotelyStrategy,
   ],
   exports: [CrawlerService],
 })

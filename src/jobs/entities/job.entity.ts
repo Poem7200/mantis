@@ -25,6 +25,7 @@ export class Job {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  // TODO: 这个location有两个含义，第一是公司本身的地址，第二是支持远程工作的地址，这两个应该要分开处理
   @Column({ type: 'varchar', length: 200, nullable: true })
   location: string;
 

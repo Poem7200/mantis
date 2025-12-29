@@ -7,6 +7,7 @@ import {
 } from './interfaces/base-strategy.interface';
 import { RemoteOkStrategy } from './strategies/remoteok-strategy';
 import { HimalayasStrategy } from './strategies/himalayas-strategy';
+import { WeWorkRemotelyStrategy } from './strategies/weworkremotely-strategy';
 
 @Injectable()
 export class CrawlerService {
@@ -17,10 +18,12 @@ export class CrawlerService {
     private readonly browserService: BrowserService,
     private readonly remoteOkStrategy: RemoteOkStrategy,
     private readonly himalayasStrategy: HimalayasStrategy,
+    private readonly weWorkRemotelyStrategy: WeWorkRemotelyStrategy,
   ) {
     // 注册所有策略
     this.registerStrategy(remoteOkStrategy);
     this.registerStrategy(himalayasStrategy);
+    this.registerStrategy(weWorkRemotelyStrategy);
   }
 
   /**
