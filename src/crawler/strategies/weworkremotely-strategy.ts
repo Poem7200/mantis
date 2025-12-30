@@ -121,6 +121,15 @@ export class WeWorkRemotelyStrategy implements ICrawlerStrategy {
                   contentContainer
                     ?.querySelector('.new-listing__company-headquarters')
                     ?.textContent?.trim() || 'Unknown Location';
+                // 获取标签
+                const tagsContainer = contentContainer?.querySelector(
+                  '.new-listing__categories',
+                );
+                const tags = Array.from(
+                  tagsContainer?.querySelectorAll(
+                    '.new-listing__categories__category',
+                  ) || [],
+                ).map((tag) => tag.textContent?.trim() || '');
 
                 // 获取标签
                 return {
@@ -128,7 +137,7 @@ export class WeWorkRemotelyStrategy implements ICrawlerStrategy {
                   company,
                   url,
                   location,
-                  tags: ['test tag'],
+                  tags,
                   salary: undefined,
                   postedAt,
                   source: 'weworkremotely',
