@@ -138,6 +138,7 @@ export class WeWorkRemotelyStrategy implements ICrawlerStrategy {
                   url,
                   location,
                   tags,
+                  // TODO: salary在tags中，但是很难判断哪一条是
                   salary: undefined,
                   postedAt,
                   source: 'weworkremotely',

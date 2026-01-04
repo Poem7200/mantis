@@ -29,6 +29,9 @@ export class Job {
   @Column({ type: 'varchar', length: 200, nullable: true })
   location: string;
 
+  @Column({ type: 'simple-array', nullable: true })
+  supportLocations?: string[];
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   salary: string;
 
