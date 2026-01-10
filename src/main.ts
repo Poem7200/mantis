@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { DEFAULT_PORT } from './config/constants';
+import { DEFAULT_PORT } from 'src/config/constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

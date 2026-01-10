@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { getDatabaseConfig } from '../config/database.config';
-import { Job } from '../jobs/entities/job.entity';
+import { getDatabaseConfig } from 'src/config/database.config';
+import { Job } from 'src/jobs/entities/job.entity';
 
 @Module({
   imports: [

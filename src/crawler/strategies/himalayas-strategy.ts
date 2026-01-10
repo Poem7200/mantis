@@ -4,11 +4,11 @@ import {
   ICrawlerStrategy,
   ICrawlOptions,
   IJob,
-} from '../interfaces/base-strategy.interface';
+} from 'src/crawler/interfaces/base-strategy.interface';
 import {
   DEFAULT_MAX_RESULTS,
   DEFAULT_PAGE_TIMEOUT,
-} from '../../config/constants';
+} from 'src/config/constants';
 
 @Injectable()
 export class HimalayasStrategy implements ICrawlerStrategy {

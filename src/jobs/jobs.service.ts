@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Job } from './entities/job.entity';
-import type { IJob } from '../crawler/interfaces/base-strategy.interface';
+import type { IJob } from 'src/crawler/interfaces/base-strategy.interface';
 
 @Injectable()
 export class JobsService {

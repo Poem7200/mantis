@@ -18,7 +18,7 @@ import {
   DEFAULT_VIEWPORT,
   DEFAULT_USER_AGENT,
   DEFAULT_IGNORE_HTTPS_ERRORS,
-} from '../config/constants';
+} from 'src/config/constants';
 
 @Injectable()
 export class BrowserPoolService implements OnModuleDestroy {

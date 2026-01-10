@@ -6,8 +6,8 @@ import { CrawlerSchedulerService } from './crawler-scheduler.service';
 import { RemoteOkStrategy } from './strategies/remoteok-strategy';
 import { HimalayasStrategy } from './strategies/himalayas-strategy';
 import { WeWorkRemotelyStrategy } from './strategies/weworkremotely-strategy';
-import { BrowserModule } from '../browser/browser.module';
-import { JobsModule } from '../jobs/jobs.module';
+import { BrowserModule } from 'src/browser/browser.module';
+import { JobsModule } from 'src/jobs/jobs.module';
 
 @Module({
   imports: [

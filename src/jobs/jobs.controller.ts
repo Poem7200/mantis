@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { Job } from './entities/job.entity';
-import type { IJob } from '../crawler/interfaces/base-strategy.interface';
+import type { IJob } from 'src/crawler/interfaces/base-strategy.interface';
 
 @Controller('jobs')
 export class JobsController {

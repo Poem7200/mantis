@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../app.module';
-import { CrawlerService } from '../crawler/crawler.service';
-import { JobsService } from '../jobs/jobs.service';
+import { AppModule } from 'src/app.module';
+import { CrawlerService } from 'src/crawler/crawler.service';
+import { JobsService } from 'src/jobs/jobs.service';
 
 async function testCrawler() {
   // 创建 NestJS 应用上下文（不需要 HTTP 服务器）

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CrawlerService } from './crawler.service';
-import { JobsService } from '../jobs/jobs.service';
+import { JobsService } from 'src/jobs/jobs.service';
 import { ConfigService } from '@nestjs/config';
 import type { ICrawlOptions } from './interfaces/base-strategy.interface';
 import {
@@ -9,7 +9,7 @@ import {
   DEFAULT_CRAWL_STRATEGY,
   DEFAULT_CRAWL_MAX_RESULTS_SCHEDULER,
   DEFAULT_CRAWL_KEYWORD,
-} from '../config/constants';
+} from 'src/config/constants';
 
 @Injectable()
 export class CrawlerSchedulerService {

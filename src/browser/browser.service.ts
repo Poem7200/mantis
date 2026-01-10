@@ -21,7 +21,7 @@ import {
   DEFAULT_USER_AGENT,
   DEFAULT_WAIT_UNTIL,
   DEFAULT_NETWORK_IDLE_TIMEOUT,
-} from '../config/constants';
+} from 'src/config/constants';
 
 @Injectable()
 export class BrowserService implements OnModuleDestroy {

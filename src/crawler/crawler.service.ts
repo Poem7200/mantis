@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BrowserService } from '../browser/browser.service';
+import { BrowserService } from 'src/browser/browser.service';
 import {
   ICrawlerStrategy,
   ICrawlOptions,
@@ -8,7 +8,7 @@ import {
 import { RemoteOkStrategy } from './strategies/remoteok-strategy';
 import { HimalayasStrategy } from './strategies/himalayas-strategy';
 import { WeWorkRemotelyStrategy } from './strategies/weworkremotely-strategy';
-import { DEFAULT_CRAWLER_HEADLESS } from '../config/constants';
+import { DEFAULT_CRAWLER_HEADLESS } from 'src/config/constants';
 
 @Injectable()
 export class CrawlerService {

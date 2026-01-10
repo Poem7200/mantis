@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { BrowserModule } from './browser/browser.module';
-import { CrawlerModule } from './crawler/crawler.module';
-import { ConfigModule } from './config/config.module';
-import { DatabaseModule } from './database/database.module';
-import { JobsModule } from './jobs/jobs.module';
+import { BrowserModule } from 'src/browser/browser.module';
+import { CrawlerModule } from 'src/crawler/crawler.module';
+import { ConfigModule } from 'src/config/config.module';
+import { DatabaseModule } from 'src/database/database.module';
+import { JobsModule } from 'src/jobs/jobs.module';
 
 @Module({
   imports: [
