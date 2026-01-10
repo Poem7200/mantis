@@ -4,6 +4,12 @@ import { CrawlerService } from './crawler.service';
 import { JobsService } from '../jobs/jobs.service';
 import { ConfigService } from '@nestjs/config';
 import type { ICrawlOptions } from './interfaces/base-strategy.interface';
+import {
+  DEFAULT_TIMEZONE,
+  DEFAULT_CRAWL_STRATEGY,
+  DEFAULT_CRAWL_MAX_RESULTS_SCHEDULER,
+  DEFAULT_CRAWL_KEYWORD,
+} from '../config/constants';
 
 @Injectable()
 export class CrawlerSchedulerService {
@@ -22,7 +28,7 @@ export class CrawlerSchedulerService {
    */
   @Cron(process.env.CRAWL_CRON || CronExpression.EVERY_6_HOURS, {
     name: 'crawl-jobs',
-    timeZone: process.env.TZ || 'Asia/Shanghai',
+    timeZone: process.env.TZ || DEFAULT_TIMEZONE,
   })
   async handleCron() {
     if (this.isRunning) {
@@ -38,7 +44,7 @@ export class CrawlerSchedulerService {
 
       // 获取要爬取的策略列表（可以通过环境变量配置）
       const strategies = this.configService
-        .get<string>('CRAWL_STRATEGIES', 'remoteok')
+        .get<string>('CRAWL_STRATEGIES', DEFAULT_CRAWL_STRATEGY)
         .split(',')
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
@@ -46,10 +52,12 @@ export class CrawlerSchedulerService {
       // 获取爬取选项
       const options: ICrawlOptions = {
         headless: true, // 定时任务始终使用 headless 模式
-        // TODO: 后续要使用变量传递
-        keyword: 'javascript',
+        keyword: DEFAULT_CRAWL_KEYWORD,
         maxResults: parseInt(
-          this.configService.get<string>('CRAWL_MAX_RESULTS', '100'),
+          this.configService.get<string>(
+            'CRAWL_MAX_RESULTS',
+            String(DEFAULT_CRAWL_MAX_RESULTS_SCHEDULER),
+          ),
           10,
         ),
       };

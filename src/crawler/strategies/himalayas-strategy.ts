@@ -5,6 +5,10 @@ import {
   ICrawlOptions,
   IJob,
 } from '../interfaces/base-strategy.interface';
+import {
+  DEFAULT_MAX_RESULTS,
+  DEFAULT_PAGE_TIMEOUT,
+} from '../../config/constants';
 
 @Injectable()
 export class HimalayasStrategy implements ICrawlerStrategy {
@@ -29,7 +33,7 @@ export class HimalayasStrategy implements ICrawlerStrategy {
    * 爬取 Himalayas 网站的职位信息
    */
   async crawl(page: Page, options: ICrawlOptions = {}): Promise<IJob[]> {
-    const { keyword, maxResults = 50 } = options;
+    const { keyword, maxResults = DEFAULT_MAX_RESULTS } = options;
 
     try {
       this.logger.log(`开始爬取 Himalayas，关键词: ${keyword || '全部'}`);
@@ -40,7 +44,7 @@ export class HimalayasStrategy implements ICrawlerStrategy {
       // 导航到页面
       await page.goto(url, {
         waitUntil: 'domcontentloaded',
-        timeout: 30000,
+        timeout: DEFAULT_PAGE_TIMEOUT,
       });
 
       this.logger.debug(`页面加载完成: ${url}`);
@@ -50,7 +54,7 @@ export class HimalayasStrategy implements ICrawlerStrategy {
       await page.waitForSelector(
         'xpath=//div[contains(@class, "group-has-[[data-pending]]/pending:hidden")]',
         {
-          timeout: 30000,
+          timeout: DEFAULT_PAGE_TIMEOUT,
         },
       );
 

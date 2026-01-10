@@ -10,7 +10,10 @@ import {
 import { CrawlerService } from './crawler.service';
 import { JobsService } from 'src/jobs/jobs.service';
 import type { ICrawlOptions } from './interfaces/base-strategy.interface';
-import { DEFAULT_MAX_RESULTS } from 'src/config/constants';
+import {
+  DEFAULT_MAX_RESULTS,
+  DEFAULT_CRAWL_STRATEGY,
+} from 'src/config/constants';
 
 @Controller('crawler')
 export class CrawlerController {
@@ -35,7 +38,7 @@ export class CrawlerController {
       maxResults?: number;
     },
   ) {
-    const strategy = body.strategy || 'remoteok';
+    const strategy = body.strategy || DEFAULT_CRAWL_STRATEGY;
     const options: ICrawlOptions = {
       headless: process.env.NODE_ENV === 'production', // 生产环境自动 headless
       keyword: body.keyword,

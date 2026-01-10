@@ -5,6 +5,10 @@ import {
   ICrawlOptions,
   IJob,
 } from '../interfaces/base-strategy.interface';
+import {
+  DEFAULT_MAX_RESULTS,
+  DEFAULT_PAGE_TIMEOUT,
+} from '../../config/constants';
 
 @Injectable()
 export class WeWorkRemotelyStrategy implements ICrawlerStrategy {
@@ -31,7 +35,7 @@ export class WeWorkRemotelyStrategy implements ICrawlerStrategy {
    * 爬取 WeWorkRemotely 网站的职位信息
    */
   async crawl(page: Page, options: ICrawlOptions = {}): Promise<IJob[]> {
-    const { keyword, maxResults = 50 } = options;
+    const { keyword, maxResults = DEFAULT_MAX_RESULTS } = options;
 
     try {
       this.logger.log(`开始爬取 WeWorkRemotely，关键词: ${keyword || '全部'}`);
@@ -42,7 +46,7 @@ export class WeWorkRemotelyStrategy implements ICrawlerStrategy {
       // 导航到页面
       await page.goto(url, {
         waitUntil: 'domcontentloaded',
-        timeout: 30000,
+        timeout: DEFAULT_PAGE_TIMEOUT,
       });
 
       this.logger.debug(`页面加载完成: ${url}`);
@@ -50,7 +54,7 @@ export class WeWorkRemotelyStrategy implements ICrawlerStrategy {
       // 等待职位列表加载
       // WeWorkRemotely 的职位列表通常在 .jobs 或类似的选择器中
       await page.waitForSelector('section.jobs', {
-        timeout: 30000,
+        timeout: DEFAULT_PAGE_TIMEOUT,
       });
 
       // TODO: WeWorkRemotely 的岗位加载可能需要翻页，需要实现翻页逻辑

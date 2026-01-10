@@ -8,6 +8,7 @@ import {
 import { RemoteOkStrategy } from './strategies/remoteok-strategy';
 import { HimalayasStrategy } from './strategies/himalayas-strategy';
 import { WeWorkRemotelyStrategy } from './strategies/weworkremotely-strategy';
+import { DEFAULT_CRAWLER_HEADLESS } from '../config/constants';
 
 @Injectable()
 export class CrawlerService {
@@ -68,7 +69,8 @@ export class CrawlerService {
     this.logger.log(`使用策略 "${strategyName}" 开始爬取`);
 
     // 从选项中提取 headless 设置，默认为 false（非 headless 模式，可以看到浏览器）
-    const headless = (options.headless as boolean | undefined) ?? false;
+    const headless =
+      (options.headless as boolean | undefined) ?? DEFAULT_CRAWLER_HEADLESS;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { headless: _headless, ...crawlOptions } = options;
 

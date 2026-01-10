@@ -5,6 +5,12 @@ import {
   ICrawlOptions,
   IJob,
 } from '../interfaces/base-strategy.interface';
+import {
+  DEFAULT_MAX_RESULTS,
+  DEFAULT_PAGE_TIMEOUT,
+  DEFAULT_SELECTOR_TIMEOUT,
+  DEFAULT_SCROLL_WAIT_TIMEOUT,
+} from '../../config/constants';
 
 @Injectable()
 export class RemoteOkStrategy implements ICrawlerStrategy {
@@ -29,7 +35,7 @@ export class RemoteOkStrategy implements ICrawlerStrategy {
    * 爬取 RemoteOK 网站的职位信息
    */
   async crawl(page: Page, options: ICrawlOptions = {}): Promise<IJob[]> {
-    const { keyword, maxResults = 50 } = options;
+    const { keyword, maxResults = DEFAULT_MAX_RESULTS } = options;
 
     try {
       this.logger.log(`开始爬取 RemoteOK，关键词: ${keyword || '全部'}`);
@@ -39,13 +45,15 @@ export class RemoteOkStrategy implements ICrawlerStrategy {
       // 导航到页面
       await page.goto(url, {
         waitUntil: 'networkidle',
-        timeout: 30000,
+        timeout: DEFAULT_PAGE_TIMEOUT,
       });
 
       this.logger.debug(`页面加载完成: ${url}`);
 
       // 等待职位列表加载
-      await page.waitForSelector('table#jobsboard', { timeout: 10000 });
+      await page.waitForSelector('table#jobsboard', {
+        timeout: DEFAULT_SELECTOR_TIMEOUT,
+      });
 
       // 滚动页面以触发懒加载
       await this.scrollToLoadMore(page);
@@ -79,7 +87,7 @@ export class RemoteOkStrategy implements ICrawlerStrategy {
       });
 
       // 等待新内容加载
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(DEFAULT_SCROLL_WAIT_TIMEOUT);
 
       const newHeight = await page.evaluate(() => document.body.scrollHeight);
 

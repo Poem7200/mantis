@@ -11,6 +11,14 @@ import {
   IBrowserInstance,
   IBrowserLaunchOptions,
 } from './interfaces/browser-options.interface';
+import {
+  DEFAULT_BROWSER_POOL_MAX_SIZE,
+  DEFAULT_BROWSER_POOL_IDLE_TIMEOUT,
+  DEFAULT_BROWSER_POOL_CLEANUP_INTERVAL,
+  DEFAULT_VIEWPORT,
+  DEFAULT_USER_AGENT,
+  DEFAULT_IGNORE_HTTPS_ERRORS,
+} from '../config/constants';
 
 @Injectable()
 export class BrowserPoolService implements OnModuleDestroy {
@@ -24,8 +32,8 @@ export class BrowserPoolService implements OnModuleDestroy {
     @Optional() @Inject('BROWSER_POOL_MAX_SIZE') maxPoolSize?: number,
     @Optional() @Inject('BROWSER_POOL_IDLE_TIMEOUT') idleTimeout?: number,
   ) {
-    this.maxPoolSize = maxPoolSize ?? 5;
-    this.idleTimeout = idleTimeout ?? 10 * 60 * 1000; // 默认 10 分钟
+    this.maxPoolSize = maxPoolSize ?? DEFAULT_BROWSER_POOL_MAX_SIZE;
+    this.idleTimeout = idleTimeout ?? DEFAULT_BROWSER_POOL_IDLE_TIMEOUT;
     this.startIdleCleanup();
   }
 
@@ -55,11 +63,10 @@ export class BrowserPoolService implements OnModuleDestroy {
     // 创建新实例
     const browser = await this.browserService.launch(options);
     const context = await browser.newContext({
-      viewport: options?.viewport || { width: 1920, height: 1080 },
-      userAgent:
-        options?.userAgent ||
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      ignoreHTTPSErrors: options?.ignoreHTTPSErrors ?? true,
+      viewport: options?.viewport || DEFAULT_VIEWPORT,
+      userAgent: options?.userAgent || DEFAULT_USER_AGENT,
+      ignoreHTTPSErrors:
+        options?.ignoreHTTPSErrors ?? DEFAULT_IGNORE_HTTPS_ERRORS,
     });
     const page = await context.newPage();
 
@@ -194,14 +201,11 @@ export class BrowserPoolService implements OnModuleDestroy {
    */
   private startIdleCleanup(): void {
     // 每 5 分钟检查一次空闲实例
-    setInterval(
-      () => {
-        this.cleanupIdle().catch((error) => {
-          this.logger.error('清理空闲实例失败', error.stack);
-        });
-      },
-      5 * 60 * 1000,
-    );
+    setInterval(() => {
+      this.cleanupIdle().catch((error) => {
+        this.logger.error('清理空闲实例失败', error.stack);
+      });
+    }, DEFAULT_BROWSER_POOL_CLEANUP_INTERVAL);
   }
 
   /**

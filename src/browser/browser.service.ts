@@ -12,6 +12,16 @@ import {
   IPageNavigationOptions,
   ISelectorOptions,
 } from './interfaces/browser-options.interface';
+import {
+  DEFAULT_BROWSER_HEADLESS,
+  DEFAULT_BROWSER_TYPE,
+  DEFAULT_VIEWPORT,
+  DEFAULT_IGNORE_HTTPS_ERRORS,
+  DEFAULT_BROWSER_TIMEOUT,
+  DEFAULT_USER_AGENT,
+  DEFAULT_WAIT_UNTIL,
+  DEFAULT_NETWORK_IDLE_TIMEOUT,
+} from '../config/constants';
 
 @Injectable()
 export class BrowserService implements OnModuleDestroy {
@@ -25,12 +35,12 @@ export class BrowserService implements OnModuleDestroy {
   async launch(options: IBrowserLaunchOptions = {}): Promise<Browser> {
     try {
       const {
-        headless = true,
-        browserType = 'chromium',
+        headless = DEFAULT_BROWSER_HEADLESS,
+        browserType = DEFAULT_BROWSER_TYPE,
         userAgent,
-        viewport = { width: 1920, height: 1080 },
-        ignoreHTTPSErrors = true,
-        timeout = 30000,
+        viewport = DEFAULT_VIEWPORT,
+        ignoreHTTPSErrors = DEFAULT_IGNORE_HTTPS_ERRORS,
+        timeout = DEFAULT_BROWSER_TIMEOUT,
         ...launchOptions
       } = options;
 
@@ -50,10 +60,8 @@ export class BrowserService implements OnModuleDestroy {
 
       // 创建浏览器上下文，该上下文有独立的缓存
       this.context = await this.browser.newContext({
-        viewport: viewport || { width: 1920, height: 1080 },
-        userAgent:
-          userAgent ||
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        viewport: viewport || DEFAULT_VIEWPORT,
+        userAgent: userAgent || DEFAULT_USER_AGENT,
         ignoreHTTPSErrors,
       });
 
@@ -87,7 +95,10 @@ export class BrowserService implements OnModuleDestroy {
     options: IPageNavigationOptions = {},
   ): Promise<void> {
     try {
-      const { waitUntil = 'networkidle', timeout = 30000 } = options;
+      const {
+        waitUntil = DEFAULT_WAIT_UNTIL,
+        timeout = DEFAULT_BROWSER_TIMEOUT,
+      } = options;
 
       this.logger.debug(`导航到: ${url}`);
       await page.goto(url, {
@@ -109,7 +120,7 @@ export class BrowserService implements OnModuleDestroy {
     selector: string,
     options: ISelectorOptions = {},
   ): Promise<void> {
-    const { timeout = 30000, visible, hidden } = options;
+    const { timeout = DEFAULT_BROWSER_TIMEOUT, visible, hidden } = options;
 
     try {
       // waitForSelector 方法会等待选择器出现在页面上，如果选择器不存在，则会等待 timeout 时间后抛出错误
@@ -264,7 +275,10 @@ export class BrowserService implements OnModuleDestroy {
   /**
    * 等待网络空闲
    */
-  async waitForNetworkIdle(page: Page, timeout: number = 5000): Promise<void> {
+  async waitForNetworkIdle(
+    page: Page,
+    timeout: number = DEFAULT_NETWORK_IDLE_TIMEOUT,
+  ): Promise<void> {
     try {
       await page.waitForLoadState('networkidle', { timeout });
     } catch (error) {
