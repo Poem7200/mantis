@@ -60,16 +60,151 @@ export class HimalayasStrategy implements ICrawlerStrategy {
 
       // TODO: himalayas的岗位加载不是无限加载那一套，而是翻页，所以需要有一个人工的点击过程（先尝试快速自动化，如果有反爬虫，改进为“模拟人类点击”的反爬虫模式）
 
-      // 提取职位数据
-      const jobs = await this.extractJobs(page, maxResults);
+      // 存储所有爬取的职位
+      const allJobs: IJob[] = [];
+      let currentPage = 1;
 
-      this.logger.log(`成功爬取 ${jobs.length} 个职位`);
-      return jobs;
+      // 循环翻页直到达到 maxResults 或没有下一页
+      while (allJobs.length < maxResults) {
+        this.logger.log(
+          `开始提取第 ${currentPage} 页职位，当前已爬取 ${allJobs.length} 个职位，目标 ${maxResults} 个`,
+        );
+
+        // 提取当前页的所有职位
+        const pageJobs = await this.extractJobsFromCurrentPage(page);
+
+        if (pageJobs.length === 0) {
+          this.logger.warn(`第 ${currentPage} 页未找到职位，停止爬取`);
+          break;
+        }
+
+        // 将当前页职位添加到总列表
+        allJobs.push(...pageJobs);
+
+        this.logger.log(
+          `第 ${currentPage} 页提取完成，本页 ${pageJobs.length} 个职位，累计 ${allJobs.length} 个职位`,
+        );
+
+        // 如果已经达到或超过目标数量，停止翻页
+        if (allJobs.length >= maxResults) {
+          this.logger.log(
+            `已达到目标数量 ${maxResults}，停止翻页。实际爬取 ${allJobs.length} 个职位`,
+          );
+          break;
+        }
+
+        // 尝试翻页
+        this.logger.log(`尝试翻到第 ${currentPage + 1} 页...`);
+        const hasNextPage = await this.pageToLoadMore(page);
+
+        if (!hasNextPage) {
+          this.logger.log('已经是最后一页，停止翻页');
+          break;
+        }
+
+        // 等待一下确保页面完全加载
+        await page.waitForTimeout(1000);
+
+        currentPage++;
+      }
+
+      // 返回前 maxResults 个职位
+      const result = allJobs.slice(0, maxResults);
+      this.logger.log(
+        `Himalayas 爬取完成：共爬取 ${allJobs.length} 个职位，返回 ${result.length} 个职位`,
+      );
+      return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '未知错误';
       const errorStack = error instanceof Error ? error.stack : undefined;
       this.logger.error(`爬取 Himalayas 失败: ${errorMessage}`, errorStack);
       throw error;
+    }
+  }
+
+  /**
+   * 提取当前页的所有职位信息（不限制数量）
+   */
+  async extractJobsFromCurrentPage(page: Page): Promise<IJob[]> {
+    try {
+      const jobs = await page.evaluate(
+        ({ baseUrl }: { baseUrl: string }) => {
+          const container = document.querySelector(
+            'div.group-has-\\[\\[data-pending\\]\\]\\/pending\\:hidden',
+          );
+
+          if (!container) {
+            return [];
+          }
+
+          const jobElements = Array.from(container.querySelectorAll('article'));
+
+          return jobElements
+            .map((element) => {
+              try {
+                const contentElement = element?.children?.[1];
+
+                const titleAndTimeElement = contentElement
+                  ?.children?.[0] as HTMLElement;
+
+                const titleElement = titleAndTimeElement?.querySelector('a');
+                const title = titleElement?.textContent?.trim() || 'Untitled';
+                const jobUrl =
+                  titleElement?.getAttribute('href') || 'no apply link';
+                const url = `${baseUrl}${jobUrl}`;
+
+                const postedAt =
+                  titleAndTimeElement
+                    ?.querySelector('time')
+                    ?.textContent?.trim() || 'Unknown Time';
+
+                const companyInfoElement = contentElement
+                  ?.children?.[1] as HTMLElement;
+                const company =
+                  companyInfoElement?.children?.[0]
+                    ?.querySelector('a')
+                    ?.textContent?.trim() || 'Unknown Company';
+
+                const locationAndTypeInfoElement = contentElement
+                  ?.children?.[2] as HTMLElement;
+                const location =
+                  locationAndTypeInfoElement?.children?.[0]?.textContent?.trim() ||
+                  'Unknown Location';
+                const type =
+                  locationAndTypeInfoElement?.children?.[1]?.textContent?.trim() ||
+                  'Unknown Type';
+                const category =
+                  locationAndTypeInfoElement?.children?.[2]
+                    ?.querySelector('a')
+                    ?.textContent?.trim() || 'Unknown Category';
+
+                const tags = [type, category];
+
+                return {
+                  title,
+                  company,
+                  url,
+                  location,
+                  tags,
+                  salary: 'test salary',
+                  postedAt,
+                  source: 'himalayas',
+                };
+              } catch (error) {
+                console.error('提取职位信息失败:', error);
+                return null;
+              }
+            })
+            .filter((job) => job !== null);
+        },
+        { baseUrl: this.baseUrl },
+      );
+
+      return jobs as IJob[];
+    } catch (error) {
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error('提取当前页职位信息失败', errorStack);
+      return [];
     }
   }
 
@@ -163,6 +298,83 @@ export class HimalayasStrategy implements ICrawlerStrategy {
       const errorStack = error instanceof Error ? error.stack : undefined;
       this.logger.error('提取职位信息失败', errorStack);
       return [];
+    }
+  }
+
+  /**
+   * 翻页到下一页
+   * 通过在 URL 查询字符串中添加或修改 page 参数实现翻页
+   * @param page Playwright 页面对象
+   * @returns 如果成功翻页返回 true，如果已经是最后一页返回 false
+   */
+  async pageToLoadMore(page: Page): Promise<boolean> {
+    try {
+      // 获取当前页面 URL
+      const currentUrl = page.url();
+
+      // 解析 URL
+      const url = new URL(currentUrl);
+      const searchParams = url.searchParams;
+
+      // 检查是否有 page 参数
+      const currentPageParam = searchParams.get('page');
+      let nextPage: number;
+
+      if (currentPageParam === null) {
+        // 如果没有 page 参数，添加 page=2
+        nextPage = 2;
+        this.logger.log('当前 URL 没有页码参数，将翻到第2页');
+      } else {
+        // 如果有 page 参数，将数字 +1
+        const currentPage = parseInt(currentPageParam, 10);
+        if (isNaN(currentPage)) {
+          this.logger.warn(
+            `当前页码参数值 "${currentPageParam}" 不是有效数字，重置为第2页`,
+          );
+          nextPage = 2;
+        } else {
+          nextPage = currentPage + 1;
+          this.logger.log(`当前页码为${currentPage}，将翻到第${nextPage}页`);
+        }
+      }
+
+      // 设置新的 page 参数
+      searchParams.set('page', String(nextPage));
+
+      // 构建新的 URL
+      const newUrl = url.toString();
+      this.logger.log(`准备翻页到第${nextPage}页`);
+
+      // 导航到新 URL
+      await page.goto(newUrl, {
+        waitUntil: 'domcontentloaded',
+        timeout: DEFAULT_PAGE_TIMEOUT,
+      });
+
+      // 等待页面完全加载
+      await page
+        .waitForLoadState('networkidle', {
+          timeout: DEFAULT_PAGE_TIMEOUT,
+        })
+        .catch(() => {
+          // 忽略超时错误，继续执行
+        });
+
+      // 等待职位列表加载
+      await page.waitForSelector(
+        'xpath=//div[contains(@class, "group-has-[[data-pending]]/pending:hidden")]',
+        {
+          timeout: DEFAULT_PAGE_TIMEOUT,
+        },
+      );
+
+      this.logger.log(`翻页成功，已加载第 ${nextPage} 页`);
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '未知错误';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`翻页失败: ${errorMessage}`, errorStack);
+      return false;
     }
   }
 }

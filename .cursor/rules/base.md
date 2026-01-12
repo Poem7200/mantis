@@ -19,7 +19,7 @@ description: mantis项目 基础规范
 - **文件命名**: 必须使用 `[name].[type].ts` 格式，例如 `job-crawler.service.ts`。
 - **目录**: 遵循模块化结构 `src/modules/[module-name]/`。
 - **导出**: 禁止使用 `export default`，必须使用具名导出。
-- **引用**: 所有文件的引入最多只允许同级别目录（即`./XX`），跨两个以上级别目录引入，使用`tsconfig.json`中配置的paths路径别名写绝对路径，不允许使用相对路径
+- **引用**: 所有文件的引入最多只允许同级别目录（即`./XX`），跨两个以上级别目录引入，使用`tsconfig.json`中配置的paths路径别名写绝对路径，不允许使用相对路径，且应该清除未在文件中使用的变量/方法/类的引入。
 
 ### 2.2 TypeScript & 常量
 
