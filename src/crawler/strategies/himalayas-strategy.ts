@@ -33,7 +33,11 @@ export class HimalayasStrategy implements ICrawlerStrategy {
    * 爬取 Himalayas 网站的职位信息
    */
   async crawl(page: Page, options: ICrawlOptions = {}): Promise<IJob[]> {
-    const { keyword, maxResults = DEFAULT_MAX_RESULTS } = options;
+    const {
+      keyword,
+      maxResults = DEFAULT_MAX_RESULTS,
+      onPageCrawled,
+    } = options;
 
     try {
       this.logger.log(`开始爬取 Himalayas，关键词: ${keyword || '全部'}`);
@@ -58,16 +62,14 @@ export class HimalayasStrategy implements ICrawlerStrategy {
         },
       );
 
-      // TODO: himalayas的岗位加载不是无限加载那一套，而是翻页，所以需要有一个人工的点击过程（先尝试快速自动化，如果有反爬虫，改进为“模拟人类点击”的反爬虫模式）
-
-      // 存储所有爬取的职位
-      const allJobs: IJob[] = [];
+      // 记录已爬取的总数（用于判断是否达到 maxResults）
+      let totalCrawled = 0;
       let currentPage = 1;
 
       // 循环翻页直到达到 maxResults 或没有下一页
-      while (allJobs.length < maxResults) {
+      while (totalCrawled < maxResults) {
         this.logger.log(
-          `开始提取第 ${currentPage} 页职位，当前已爬取 ${allJobs.length} 个职位，目标 ${maxResults} 个`,
+          `开始提取第 ${currentPage} 页职位，当前已爬取 ${totalCrawled} 个职位，目标 ${maxResults} 个`,
         );
 
         // 提取当前页的所有职位
@@ -78,17 +80,34 @@ export class HimalayasStrategy implements ICrawlerStrategy {
           break;
         }
 
-        // 将当前页职位添加到总列表
-        allJobs.push(...pageJobs);
+        // 如果提供了回调函数，立即存储当前页的数据
+        if (onPageCrawled) {
+          try {
+            await (onPageCrawled as (jobs: IJob[]) => Promise<void>)(pageJobs);
+            this.logger.log(
+              `第 ${currentPage} 页提取完成，本页 ${pageJobs.length} 个职位已存储`,
+            );
+          } catch (error) {
+            const errorMessage =
+              error instanceof Error ? error.message : '未知错误';
+            this.logger.error(
+              `第 ${currentPage} 页数据存储失败: ${errorMessage}`,
+            );
+            // 存储失败时继续执行，不中断爬取
+          }
+        } else {
+          this.logger.log(
+            `第 ${currentPage} 页提取完成，本页 ${pageJobs.length} 个职位`,
+          );
+        }
 
-        this.logger.log(
-          `第 ${currentPage} 页提取完成，本页 ${pageJobs.length} 个职位，累计 ${allJobs.length} 个职位`,
-        );
+        // 更新已爬取总数
+        totalCrawled += pageJobs.length;
 
         // 如果已经达到或超过目标数量，停止翻页
-        if (allJobs.length >= maxResults) {
+        if (totalCrawled >= maxResults) {
           this.logger.log(
-            `已达到目标数量 ${maxResults}，停止翻页。实际爬取 ${allJobs.length} 个职位`,
+            `已达到目标数量 ${maxResults}，停止翻页。实际爬取 ${totalCrawled} 个职位`,
           );
           break;
         }
@@ -108,12 +127,9 @@ export class HimalayasStrategy implements ICrawlerStrategy {
         currentPage++;
       }
 
-      // 返回前 maxResults 个职位
-      const result = allJobs.slice(0, maxResults);
-      this.logger.log(
-        `Himalayas 爬取完成：共爬取 ${allJobs.length} 个职位，返回 ${result.length} 个职位`,
-      );
-      return result;
+      this.logger.log(`Himalayas 爬取完成：共爬取 ${totalCrawled} 个职位`);
+      // 由于数据已经通过回调存储，返回空数组
+      return [];
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '未知错误';
       const errorStack = error instanceof Error ? error.stack : undefined;

@@ -66,6 +66,8 @@ export interface ICrawlOptions {
   keyword?: string;
   /** 最大爬取数量 */
   maxResults?: number;
+  /** 每爬完一页时的回调函数，用于立即存储数据 */
+  onPageCrawled?: (jobs: IJob[]) => Promise<void>;
   /** 其他自定义选项 */
   [key: string]: any;
 }

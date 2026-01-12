@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { CrawlerService } from './crawler.service';
 import { JobsService } from 'src/jobs/jobs.service';
 import { ConfigService } from '@nestjs/config';
-import type { ICrawlOptions } from './interfaces/base-strategy.interface';
+import type { ICrawlOptions, IJob } from './interfaces/base-strategy.interface';
 import {
   DEFAULT_TIMEZONE,
   DEFAULT_CRAWL_STRATEGY,
@@ -49,42 +49,71 @@ export class CrawlerSchedulerService {
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
 
-      // 获取爬取选项
-      const options: ICrawlOptions = {
-        headless: true, // 定时任务始终使用 headless 模式
-        keyword: DEFAULT_CRAWL_KEYWORD,
-        maxResults: parseInt(
-          this.configService.get<string>(
-            'CRAWL_MAX_RESULTS',
-            String(DEFAULT_CRAWL_MAX_RESULTS_SCHEDULER),
-          ),
-          10,
-        ),
-      };
-
-      // 批量爬取
-      const results = await this.crawlerService.crawlMultiple(
-        strategies,
-        options,
-      );
-
-      // 保存所有结果到数据库
+      // 统计信息
       let totalSaved = 0;
       let totalSkipped = 0;
+      const strategyStats = new Map<
+        string,
+        { saved: number; skipped: number }
+      >();
 
-      for (const [strategy, jobs] of results.entries()) {
-        if (jobs.length > 0) {
+      // 为每个策略创建存储回调
+      const createStorageCallback = (strategyName: string) => {
+        return async (jobs: IJob[]): Promise<void> => {
+          if (jobs.length === 0) {
+            return;
+          }
+
           const { saved, skipped } =
             await this.jobsService.createManyWithDuplicateHandling(jobs);
           totalSaved += saved.length;
           totalSkipped += skipped;
 
+          // 更新策略统计
+          const currentStats = strategyStats.get(strategyName) || {
+            saved: 0,
+            skipped: 0,
+          };
+          strategyStats.set(strategyName, {
+            saved: currentStats.saved + saved.length,
+            skipped: currentStats.skipped + skipped,
+          });
+
           this.logger.log(
-            `策略 ${strategy}: 保存 ${saved.length} 个，跳过 ${skipped} 个`,
+            `策略 ${strategyName}: 本页保存 ${saved.length} 个，跳过 ${skipped} 个`,
           );
-        } else {
-          this.logger.warn(`策略 ${strategy}: 未找到职位信息`);
+        };
+      };
+
+      // 批量爬取，为每个策略传入存储回调
+      for (const strategyName of strategies) {
+        try {
+          const options: ICrawlOptions = {
+            headless: true, // 定时任务始终使用 headless 模式
+            keyword: DEFAULT_CRAWL_KEYWORD,
+            maxResults: parseInt(
+              this.configService.get<string>(
+                'CRAWL_MAX_RESULTS',
+                String(DEFAULT_CRAWL_MAX_RESULTS_SCHEDULER),
+              ),
+              10,
+            ),
+            onPageCrawled: createStorageCallback(strategyName),
+          };
+
+          await this.crawlerService.crawl(strategyName, options);
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : '未知错误';
+          this.logger.error(`策略 ${strategyName} 爬取失败: ${errorMessage}`);
         }
+      }
+
+      // 输出每个策略的统计信息
+      for (const [strategy, stats] of strategyStats.entries()) {
+        this.logger.log(
+          `策略 ${strategy}: 总计保存 ${stats.saved} 个，跳过 ${stats.skipped} 个`,
+        );
       }
 
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
